@@ -1,13 +1,13 @@
-function [NET, OUTPUTS, ERRORS, RMSE, TR] = ANN(hiddenSizes,X,T,BP,ACT)
+function [NET, OUTPUTS, ERRORS, RMSE, TR] = ANN(hiddenSizes,X,T,BP,ACT,DivideData)
 % ANN  Recebe 5 variáveis de entrada, a quantidade de neurônios e camadas
 % da rede hiddenSizes, variáveis de entrada X, alvos da rede neural T, a
-% função de ativação ACT e o algoritmo de backpropagation BP, e retorna a
-% rede após o treinamento,  a saída calculada com a rede neural OUTPUTS, o
-% erro em relação a saida da rede neural e o alvo ERRORS, a raiz do erro
-% médio quadrático RMSE e, por fim, o registro do treinamento TR.
+% função de ativação ACT, o algoritmo de backpropagation BP e a divisão dos
+% dados de entrada DivideData, e retorna a rede após o treinamento,  a
+% saída calculada com a rede neural OUTPUTS, o erro em relação a saida da
+% rede neural e o alvo ERRORS, a raiz do erro médio quadrático RMSE e, por
+% fim, o registro do treinamento TR.
 % 
-%   Variáveis de entrada:
-% 
+%   ENTRADAS:
 %   hiddenSizes = Neurônios a serem usados na rede neural, seja com uma
 %   ou mais camadas ocultas.Ex: [1 3].
 %       
@@ -18,12 +18,15 @@ function [NET, OUTPUTS, ERRORS, RMSE, TR] = ANN(hiddenSizes,X,T,BP,ACT)
 %       R = Número de elementos de entrada
 %       U = Numero de elementos de saída
 % 
-%   BP = Algorítimo de backpropagation. (Pradrão = 'trainlm')
+%   BP = Algorítimo de backpropagation. (Padrão = 'trainlm')
 %   http://bit.ly/MultilayerNeuralNetwork
 % 
-%   ACT = Função de ativação da rede neural.(Pradrão = 'tansig')
+%   ACT = Função de ativação da rede neural.(Padrão = 'tansig')
 %   http://bit.ly/NeuralNetworkActivation
 % 
+%   DivideData = Porcentagem dos dados entre treino, validação e teste.
+%   Formato [60 20 20]. (Padrão = [70 15 15])
+%    
 %   SAÍDAS:
 %   NET = Retorna a rede neural treinada como um objeto _network_ 
 
@@ -41,8 +44,12 @@ function [NET, OUTPUTS, ERRORS, RMSE, TR] = ANN(hiddenSizes,X,T,BP,ACT)
 if nargin < 4
     BP = 'trainlm';
     ACT = 'tansig';
-elseif nargin < 5
+end
+if nargin < 5
     ACT = 'tansig';
+end
+if nargin < 6
+    DivideData = [];
 end
 
 %% =========== ANN =============
@@ -52,6 +59,12 @@ NET = fitnet(hiddenSizes, BP);
 %Define a função de ativação
 for i = 1:length(hiddenSizes)
     NET.layers{i}.transferFcn = ACT;
+end
+
+if ~isempty(DivideData)
+    NET.divideParam.trainRatio = DivideData(1);
+    NET.divideParam.valRatio = DivideData(2);
+    NET.divideParam.testRatio = DivideData(3);
 end
 
 %Para o caso da escolha da função de ativação sigmoid são definidos os
